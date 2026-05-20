@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""Create Codex /goal Markdown tracking files.
+
+Usage:
+  make-goal [target_dir] [--name "Short task name"] [--force]
+
+Examples:
+  make-goal
+  make-goal . --name "Retriever speedup"
+  make-goal /path/to/repo --name "Fix flaky tests" --force
+"""
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+TEMPLATES = {
+    "GOAL.md": """# Goal: {name}
+
+## Objective
+
+<One sentence with the measurable outcome.>
+
+## Success Criteria
+
+Codex may stop only when all of the following are true:
+
+- [ ] <Quantitative criterion 1: metric + threshold + target file/module>
+- [ ] <Quantitative or checklist criterion 2>
+- [ ] <No-regression criterion: tests, API behavior, output equivalence, etc.>
+- [ ] <Documentation or handoff criterion, if needed>
+
+## Non-Goals
+
+- <What Codex must not attempt.>
+- <Large rewrites or risky scope expansions to avoid.>
+
+## Constraints
+
+- Preserve: <public APIs, data formats, technical content, user-visible behavior>
+- Do not modify: <protected files/directories>
+- Allowed to modify: <specific files/directories>
+- Dependencies: <whether new dependencies are allowed; if yes, constraints>
+- Runtime budget: <per-iteration and final verification budget>
+
+## Scoring / Feedback Loop
+
+### Fast iteration command
+
+```bash
+<fast command Codex should run often>
+```
+
+Expected signal:
+
+- Pass condition: <what output means progress/success>
+- Fail condition: <what output means regression>
+- Typical runtime: <seconds/minutes>
+
+### Primary scoring command
+
+```bash
+<benchmark/eval/test command that directly measures the goal>
+```
+
+Metric to optimize:
+
+- Baseline: <baseline number or how to compute it>
+- Target: <required improvement or threshold>
+
+### Final verification command
+
+```bash
+<full test/eval/lint command>
+```
+
+Codex must run this before declaring success.
+
+## Tracking Requirements
+
+Codex must keep these files updated:
+
+- `PLAN.md`: current strategy and next steps.
+- `EXPERIMENTS.md`: curated list of attempts and results.
+- `EXPERIMENT_NOTES.md`: chronological scratchpad.
+
+After each meaningful attempt, append an entry to `EXPERIMENTS.md` before starting another attempt.
+
+## Stop and Report Conditions
+
+Stop and report if:
+
+- All success criteria are checked and final verification passes.
+- The same approach fails twice without new information.
+- The goal appears impossible under the constraints.
+- A required command cannot run due to missing credentials, missing data, or environment problems.
+
+Final report must include:
+
+- What changed.
+- Evidence for each success criterion.
+- Commands run and final outputs/metrics.
+- Remaining risks or follow-up suggestions.
+""",
+    "PLAN.md": """# Plan
+
+## Current Strategy
+
+<Initial plan. Keep this high-level and update when strategy changes.>
+
+## Assumptions
+
+- <Assumption 1>
+- <Assumption 2>
+
+## Milestones
+
+- [ ] Establish baseline and confirm scoring command works.
+- [ ] Try first low-risk improvement.
+- [ ] Compare metric against baseline.
+- [ ] Iterate until target is met.
+- [ ] Run final verification.
+- [ ] Produce final report.
+
+## Decision Log
+
+- <YYYY-MM-DD HH:MM> — <decision> — <why>
+""",
+    "EXPERIMENTS.md": """# Experiments
+
+Use this as the curated record. One entry per meaningful attempt.
+
+## Baseline
+
+- Command: `<baseline command>`
+- Result: <baseline metric/output>
+- Notes: <important context>
+
+## Attempts
+
+### Attempt 001 — <short title>
+
+- Hypothesis: <why this might help>
+- Change: <files/functions changed>
+- Command(s): `<commands run>`
+- Result: <metric/test result>
+- Outcome: Success / Partial / Failed
+- Interpretation: <what was learned>
+- Next: <what to try next>
+""",
+    "EXPERIMENT_NOTES.md": """# Experiment Notes
+
+Chronological scratchpad. Append-only unless cleaning obvious duplicates.
+
+## <YYYY-MM-DD HH:MM>
+
+- Observed: <fact from code/test/output>
+- Thought: <short reasoning>
+- Next action: <specific next step>
+""",
+}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Create Codex /goal Markdown tracking files.")
+    parser.add_argument("target_dir", nargs="?", default=".", help="Directory where files should be created")
+    parser.add_argument("--name", default="<short task name>", help="Goal name to place in GOAL.md")
+    parser.add_argument("--force", action="store_true", help="Overwrite existing files")
+    args = parser.parse_args()
+
+    target = Path(args.target_dir).expanduser().resolve()
+    target.mkdir(parents=True, exist_ok=True)
+
+    written = []
+    skipped = []
+    for filename, template in TEMPLATES.items():
+        path = target / filename
+        if path.exists() and not args.force:
+            skipped.append(filename)
+            continue
+        path.write_text(template.format(name=args.name), encoding="utf-8")
+        written.append(filename)
+
+    if written:
+        print("Created:")
+        for name in written:
+            print(f"  - {target / name}")
+    if skipped:
+        print("Skipped existing files; pass --force to overwrite:")
+        for name in skipped:
+            print(f"  - {target / name}")
+
+    print("\nSuggested Codex prompt:")
+    print("/goal Read GOAL.md, PLAN.md, EXPERIMENTS.md, and EXPERIMENT_NOTES.md. Work autonomously until all Success Criteria in GOAL.md are satisfied. Keep the tracking files updated after each meaningful attempt. Do not declare success until the Final verification command in GOAL.md passes. Stop and report if blocked by environment, missing data, or impossible constraints.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -11,6 +11,7 @@ Based on Chris Hayduk's article, "Using Codex Goals Effectively", this repo turn
 ## What is included
 
 - `skills/autonomous-ai-agents/codex-goal-md/SKILL.md` — Hermes Agent skill.
+- `bin/make-goal` — CLI helper that creates the four Markdown files in a target directory.
 - `templates/GOAL.md` — measurable goal contract template.
 - `templates/PLAN.md` — high-level strategy and decision log template.
 - `templates/EXPERIMENTS.md` — curated experiment/results log template.
@@ -18,11 +19,34 @@ Based on Chris Hayduk's article, "Using Codex Goals Effectively", this repo turn
 
 ## Quick use
 
+### Option A: copy templates manually
+
 Copy the templates into your target repository, fill in the measurable criteria, then start Codex with:
 
 ```text
 /goal Read GOAL.md, PLAN.md, EXPERIMENTS.md, and EXPERIMENT_NOTES.md. Work autonomously until all Success Criteria in GOAL.md are satisfied. Keep the tracking files updated after each meaningful attempt. Do not declare success until the Final verification command in GOAL.md passes. Stop and report if blocked by environment, missing data, or impossible constraints.
 ```
+
+### Option B: generate files with `make-goal`
+
+From this repository:
+
+```bash
+./bin/make-goal /path/to/target/repo --name "Retriever speedup"
+```
+
+Or add `bin/` to your `PATH` and run it as a command:
+
+```bash
+make-goal . --name "Fix flaky tests"
+```
+
+This creates:
+
+- `GOAL.md`
+- `PLAN.md`
+- `EXPERIMENTS.md`
+- `EXPERIMENT_NOTES.md`
 
 ## Minimal checklist for a good Codex goal
 
@@ -42,6 +66,8 @@ Copy the templates into your target repository, fill in the measurable criteria,
 .
 ├── README.md
 ├── LICENSE
+├── bin/
+│   └── make-goal
 ├── skills/
 │   └── autonomous-ai-agents/
 │       └── codex-goal-md/
