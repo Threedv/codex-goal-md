@@ -37,7 +37,19 @@ The generated files should be as detailed as possible so Codex can run for hours
 
 ### What `$make-goal` should ask
 
-A good first message is:
+A good first message should match the user's language. For English users:
+
+```text
+Great. Before I create the four Codex /goal files, I’ll ask a few questions so the files are detailed enough to be useful.
+
+1. Which folder/repo should I create them in? If it is the current folder, say `.`.
+2. What is the goal in one sentence?
+3. Which files/folders is Codex allowed to modify, and which files/folders must it not touch?
+4. What command should Codex use to verify success? Examples: pytest, benchmark, lint, eval script.
+5. What should the success criteria be as numbers or checklist items? Examples: 0 failing tests, 20% lower latency, 100% checklist completion.
+```
+
+For Korean users:
 
 ```text
 좋아. Codex /goal용 4개 파일을 만들기 전에 몇 가지만 물어볼게.
